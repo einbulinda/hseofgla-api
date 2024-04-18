@@ -1,0 +1,13 @@
+flask
+pathlib
+python-dotenv
+PyJWT
+Flask-SQLAlchemy
+Flask-Migrate
+flask-bcrypt
+psycopg2-binary
+flask_cors
+flask_jwt_extended
+flask_limiter
+flask_jwt_extended
+werkzeug
