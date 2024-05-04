@@ -16,8 +16,8 @@ CREATE TABLE dev.staff (
     FOREIGN KEY (updated_by) REFERENCES dev.staff(staff_id)
 );
 
-INSERT INTO dev.staff staff_id, name, role, created_by 
-VALUES (1001,"hseofgla","system",1001);
+INSERT INTO dev.staff (staff_id, name, role) 
+VALUES (1001,'hseofgla','system');
 
 -- Creating the Categories table with a self-referencing parent_category_id
 CREATE TABLE dev.categories (
@@ -221,9 +221,8 @@ CREATE TABLE aud.audit_log (
     FOREIGN KEY (changed_by) REFERENCES dev.staff(staff_id)
 );
 
-'''
-	TRIGGERS
-'''
+---	TRIGGERS
+
 
 -- Audit Trail Trigger for Products Table
 CREATE OR REPLACE FUNCTION dev.audit_products_changes()
