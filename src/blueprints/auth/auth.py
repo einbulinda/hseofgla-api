@@ -7,6 +7,7 @@ from src.models.staff import Staff
 from src.models.customers import Customer
 from src.models.login_details import LoginDetails
 
+
 # Create blueprint for authentication
 auth = Blueprint('auth', __name__, url_prefix='/api/v1/auth')
 
@@ -53,6 +54,7 @@ def register():
 @limiter.limit("5 per minute") # 5 attempts in a minute.
 def login():
     """Provides logic for Customer login"""   
+
     # Identify source system
     source = request.headers.get('Source-System','customer')  # Default to 'customer' if not provided
     data = request.get_json()
@@ -62,6 +64,7 @@ def login():
     time.sleep(1) # Time delay to discourage brute force.
 
     # Determine query based on the source system
+    user = None
     if source.lower() == 'back-office':
         user = LoginDetails.query.filter(LoginDetails.username == username, LoginDetails.staff_id.isnot(None)).first()
     else:
@@ -77,6 +80,7 @@ def login():
 
         # Create access token using the identity of the user
         access_token = create_access_token(identity={"user_id":user.staff_id if user.staff_id else user.customer_id})
+        record_login_session(user.staff_id, request)
         
         return jsonify({
             "message":"Login successful",
@@ -87,4 +91,15 @@ def login():
         user.failed_attempts = user.failed_attempts + 1
         db.session.commit()
         return jsonify({"message":"Invalid username or password."}), 401
-            
+
+def record_login_session(user_id, request):
+    """Record a new login session for a staff member."""
+    from src.models.staff_login_sessions import StaffLoginSessions
+    
+    new_session = StaffLoginSessions(
+        staff_id = user_id,
+        ip_address = request.remote_addr,
+        device_info = str(request.user_agent)
+    )
+    db.session.add(new_session)
+    db.session.commit()
