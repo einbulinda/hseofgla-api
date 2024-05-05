@@ -8,6 +8,7 @@ from src.models.staff import Staff
 from src.models.customers import Customer
 from src.models.login_details import LoginDetails
 from src.models.staff_login_sessions import StaffLoginSessions
+from src.models.revoked_tokens import RevokedToken
 
 
 # Create blueprint for authentication
@@ -108,8 +109,16 @@ def record_login_session(user_id, request):
 @jwt_required()
 def logout():
     """Logs out a user from the applications"""
+    jti = get_jwt()['jti'] # 'jti' is "JWT ID", a unique identifier for a JWT.
     current_user = get_jwt_identity()
-    return update_logout_session(current_user['user_id'])
+    revoked_token = RevokedToken(jti=jti)
+    revoked_token.add()
+    
+    if update_logout_session(current_user['user_id']):
+        return jsonify({"message":"User successfully logged out."}),200
+    else:
+        return jsonify({"error":"No active session found"}),404
+
 
 def update_logout_session(user_id):
     """Update user session on logout"""
@@ -120,8 +129,8 @@ def update_logout_session(user_id):
     ).order_by(StaffLoginSessions.login_timestamp.desc()).first()
 
     if session:
-        session.logout_timestamp = datetime.datetime.utcnow()
+        session.logout_timestamp = datetime.utcnow()
         db.session.commit()
-        return jsonify({"message":"User successfully logged out."}),200
-    else:
-        return jsonify({"error":"No active session found"}),404
+        return True
+    return False
+        

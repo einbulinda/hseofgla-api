@@ -9,6 +9,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from src.models.revoked_tokens import RevokedToken
 
 # Load environment variables
 load_dotenv()
@@ -20,6 +21,11 @@ migrate = Migrate()
 cors = CORS()
 jwt = JWTManager()
 limiter = Limiter(key_func=get_remote_address, default_limits=["5 per minute", "100 per day"])
+
+@jwt.token_in_blocklist_loader
+def check_if_token_in_blacklist(jwt_header, jwt_payload):
+    jti = jwt_payload['jti']
+    return RevokedToken.is_jti_blacklisted(jti)
 
 # Initialize logging based on the environment
 def setup_logging(app):

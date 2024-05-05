@@ -239,6 +239,11 @@ CREATE TABLE aud.staff_login_sessions (
     FOREIGN KEY (staff_id) REFERENCES dev.staff(staff_id)
 );
 
+CREATE TABLE aud.revoked_tokens(
+    id SERIAL PRIMARY KEY,
+    JTI VARCHAR(120) UNIQUE NOT NULL
+);
+
 -- Creating a login details table for both customers and staff.
 CREATE TABLE aud.login_details (
 	loggin_id SERIAL PRIMARY KEY,
