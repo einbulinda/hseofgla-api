@@ -1,11 +1,13 @@
 from flask import Blueprint, request, jsonify, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, jwt_required
 from src import db, limiter
 import time
+import datetime
 from src.models.staff import Staff
 from src.models.customers import Customer
 from src.models.login_details import LoginDetails
+from src.models.staff_login_sessions import StaffLoginSessions
 
 
 # Create blueprint for authentication
@@ -93,9 +95,7 @@ def login():
         return jsonify({"message":"Invalid username or password."}), 401
 
 def record_login_session(user_id, request):
-    """Record a new login session for a staff member."""
-    from src.models.staff_login_sessions import StaffLoginSessions
-    
+    """Record a new login session for a staff member."""    
     new_session = StaffLoginSessions(
         staff_id = user_id,
         ip_address = request.remote_addr,
@@ -103,3 +103,25 @@ def record_login_session(user_id, request):
     )
     db.session.add(new_session)
     db.session.commit()
+
+@auth.route('/logout',methods=['POST'])
+@jwt_required()
+def logout():
+    """Logs out a user from the applications"""
+    current_user = get_jwt_identity()
+    return update_logout_session(current_user['user_id'])
+
+def update_logout_session(user_id):
+    """Update user session on logout"""
+    # Find the latest session for the user that hasn't been closed yet
+    session = StaffLoginSessions.query.filter_by(
+        staff_id = user_id,
+        logout_timestamp=None
+    ).order_by(StaffLoginSessions.login_timestamp.desc()).first()
+
+    if session:
+        session.logout_timestamp = datetime.datetime.utcnow()
+        db.session.commit()
+        return jsonify({"message":"User successfully logged out."}),200
+    else:
+        return jsonify({"error":"No active session found"}),404
