@@ -49,34 +49,20 @@ def register():
 
 @auth.route('/login', methods=['POST'])
 def login():
+    """Provides logic for Customer login"""
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
     
     # Query login_details to get user by the username provided
-    login_detail = LoginDetails.query.filter_by(username=username).first()
+    customer = LoginDetails.query.filter(username == username, LoginDetails.customer_id != None).first()
     
-    if login_detail and check_password_hash(login_detail.password, password):
-        access_token = create_access_token(identity={'user_id': login_detail.staff_id or login_detail.customer_id})
-        if login_detail.staff_id:
-            # Fetch staff profile details
-            staff = Staff.query.get(login_detail.staff_id)
-            profile_data = {
-                "user_id":staff.staff_id,
-                "name": staff.name,
-                # "role": staff.role
-            }
-        elif login_detail.customer_id:
-            customer = Customer.query.get(login_detail.customer_id)
-            profile_data = {
-                "user_id": customer.customer_id,
-                "name": customer.name,
-            }
-        else:
-            return jsonify({"message":"User role could not be determined"}), 401
-        
-        profile_data["access_token"] = access_token
-        
+    if customer and check_password_hash(customer.password, password):
+        # Other details can be shared if and when necessary on validating the token
+        profile_data = {
+            "username": customer.username,
+            "access_token" : create_access_token(identity={'user_id': customer.customer_id})
+        }        
         return jsonify({
             "message":"Login successful",
             "profile": profile_data
@@ -84,4 +70,27 @@ def login():
     else:
         return jsonify({"message":"Invalid username or password."}), 401
             
+
+@auth.route('/signin', methods=['POST'])
+def signin():
+    """Provides logic for staff signin"""
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    staff = LoginDetails.query.filter(username == username, LoginDetails.staff_id != None).first()
+
+    if staff and check_password_hash(staff.password, password):
+        profile_data ={
+            "username": staff.username,
+            "access_token" : create_access_token(identity={'user_id': staff.staff_id})
+        }
+        return jsonify({
+            "message":"Login successful",
+            "profile": profile_data
+        }), 200
+    else:
+        return jsonify({"message":"Invalid username or password."}), 401
+        
+       
     
