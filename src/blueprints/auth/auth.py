@@ -37,7 +37,7 @@ def register():
             user = Customer(name=name,email=email,mobile_number=mobile,created_by=current_user)
             db.session.add(user)
             db.session.flush()
-            login_detail = LoginDetails(customer_id=user.customer_id,username=username, password=password_hash, created_by=user.customer_id, updated_by=user.customer_id)
+            login_detail = LoginDetails(customer_id=user.customer_id,username=username, password=password_hash, created_by=current_user, updated_by=current_user)
         
         db.session.add(login_detail)
         db.session.commit()

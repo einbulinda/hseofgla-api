@@ -1,4 +1,3 @@
---Create a dev schema 
 CREATE SCHEMA IF NOT EXISTS dev;
 CREATE SCHEMA IF NOT EXISTS aud;
 
@@ -8,16 +7,22 @@ CREATE TABLE dev.staff (
     staff_id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     role VARCHAR(255) NOT NULL,
+    mobile_number VARCHAR(15),
+	email VARCHAR(255),
 	created_by INT,
 	created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_by INT,
 	updated_date TIMESTAMP,
 	FOREIGN KEY (created_by) REFERENCES dev.staff(staff_id),
-    FOREIGN KEY (updated_by) REFERENCES dev.staff(staff_id)
+    FOREIGN KEY (updated_by) REFERENCES dev.staff(staff_id),
+    ADD SEQUENCE staff_staff_id_seq RESTART WITH 1001
 );
 
-INSERT INTO dev.staff (staff_id, name, role) 
-VALUES (1001,'hseofgla','system');
+-- Staff ID to start from 1001
+-- ALTER SEQUENCE dev.staff_staff_id_seq RESTART WITH 1001;
+
+INSERT INTO dev.staff (name, role) 
+VALUES ('hseofgla','system');
 
 -- Creating the Categories table with a self-referencing parent_category_id
 CREATE TABLE dev.categories (
@@ -208,6 +213,50 @@ CREATE TABLE dev.inventory_history (
     FOREIGN KEY (updated_by) REFERENCES dev.staff(staff_id)
 );
 
+--Creating the Images Table
+CREATE TABLE dev.product_images (
+    image_id SERIAL PRIMARY KEY,
+    variant_id INT NOT NULL,
+    image_name VARCHAR(255) NOT NULL,
+    image_url TEXT NOT NULL,
+    created_by INT,
+    created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by INT,
+    updated_date TIMESTAMP,
+    FOREIGN KEY (variant_id) REFERENCES dev.product_variants (variant_id),
+    FOREIGN KEY (created_by) REFERENCES dev.staff(staff_id),
+    FOREIGN KEY (updated_by) REFERENCES dev.staff(staff_id)
+);
+
+-- Creating the Staff Login Sessions table
+CREATE TABLE aud.staff_login_sessions (
+    session_id SERIAL PRIMARY KEY,
+    staff_id INT NOT NULL,
+    login_timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    logout_timestamp TIMESTAMP,
+    ip_address VARCHAR(255),
+    device_info TEXT,
+    FOREIGN KEY (staff_id) REFERENCES dev.staff(staff_id)
+);
+
+-- Creating a login details table for both customers and staff.
+CREATE TABLE aud.login_details (
+	loggin_id SERIAL PRIMARY KEY,
+	staff_id INT,
+	customer_id INT,
+	username VARCHAR(255),
+	password VARCHAR (255),
+	created_by INT,
+    created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_by INT,
+    updated_date TIMESTAMP,
+	FOREIGN KEY (staff_id) REFERENCES dev.staff(staff_id),
+	FOREIGN KEY (customer_id) REFERENCES dev.customers(customer_id),
+    FOREIGN KEY (created_by) REFERENCES dev.staff(staff_id),
+    FOREIGN KEY (updated_by) REFERENCES dev.staff(staff_id)
+);
+
+
 -- Creating the Audit Log table
 CREATE TABLE aud.audit_log (
     log_id SERIAL PRIMARY KEY,
@@ -222,7 +271,6 @@ CREATE TABLE aud.audit_log (
 );
 
 ---	TRIGGERS
-
 
 -- Audit Trail Trigger for Products Table
 CREATE OR REPLACE FUNCTION dev.audit_products_changes()
@@ -286,7 +334,7 @@ BEGIN
 				('staff','role', OLD.role,NEW.role,'UPDATE',NEW.updated_by,NOW());	
 	ELSIF TG_OP = 'INSERT' THEN
 		INSERT INTO aud.audit_log(table_name, operation_type, changed_by,changed_date)
-		VALUES ('staff','INSERT',NEW.updated_by,NOW());	
+		VALUES ('staff','INSERT',NEW.created_by,NOW());	
 	ELSIF TG_OP = 'DELETE' THEN
 		INSERT INTO aud.audit_log(table_name,field_name, old_value, operation_type, changed_by, changed_date)
 		VALUES ('staff','name', OLD.name,'DELETE',OLD.updated_by,NOW());
@@ -298,6 +346,35 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER staff_audit_trigger
 AFTER INSERT OR UPDATE OR DELETE ON dev.staff
 FOR EACH ROW EXECUTE FUNCTION dev.audit_staff_changes();
+
+-- Trigger for Audit Trail on Customers Table
+CREATE OR REPLACE FUNCTION dev.audit_customer_changes()
+RETURNS TRIGGER AS $$
+BEGIN
+	IF TG_OP = 'UPDATE' THEN
+		INSERT INTO aud.audit_log(table_name,field_name, old_value, new_value, operation_type, changed_by,changed_date)
+		VALUES ('customers','name', OLD.name,NEW.name,'UPDATE',NEW.updated_by,NOW()),
+				('customers','mobile_number', OLD.role,NEW.role,'UPDATE',NEW.updated_by,NOW()),
+				('customers','email', OLD.role,NEW.role,'UPDATE',NEW.updated_by,NOW()),
+				('customers','credit_balance', OLD.role,NEW.role,'UPDATE',NEW.updated_by,NOW());	
+	ELSIF TG_OP = 'INSERT' THEN
+		INSERT INTO aud.audit_log(table_name, operation_type, changed_by,changed_date)
+		VALUES ('customers','INSERT',NEW.created_by,NOW());	
+	ELSIF TG_OP = 'DELETE' THEN
+		INSERT INTO aud.audit_log(table_name,field_name, old_value, operation_type, changed_by, changed_date)
+		VALUES ('customers','name', OLD.name,'DELETE',OLD.updated_by,NOW()),
+                ('customers','mobile_number', OLD.name,'DELETE',OLD.updated_by,NOW()),
+                ('customers','email', OLD.name,'DELETE',OLD.updated_by,NOW()),
+                ('customers','credit_balance', OLD.name,'DELETE',OLD.updated_by,NOW());
+	END IF;
+	RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER customers_audit_trigger
+AFTER INSERT OR UPDATE OR DELETE ON dev.customers
+FOR EACH ROW EXECUTE FUNCTION dev.audit_customer_changes();
+
 
 -- Trigger for Audit Trail on Discounts Table
 CREATE OR REPLACE FUNCTION dev.audit_discounts_changes()
@@ -345,5 +422,3 @@ CREATE TRIGGER orders_audit_trigger
 AFTER INSERT OR UPDATE OR DELETE ON dev.orders
 FOR EACH ROW EXECUTE FUNCTION dev.audit_orders_changes();
 
--- Staff ID to start from 1001
-ALTER SEQUENCE dev.staff_staff_id_seq RESTART WITH 1001

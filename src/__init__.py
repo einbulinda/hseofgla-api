@@ -13,6 +13,7 @@ from flask_limiter.util import get_remote_address
 # Load environment variables
 load_dotenv()
 
+
 # Initialize Flask Extensions
 db =  SQLAlchemy()
 migrate = Migrate()
@@ -57,6 +58,8 @@ def create_app():
     
     # Load environment specific configurations
     env = os.environ.get('FLASK_ENV', 'development')
+    # app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("SQLALCHEMY_DATABASE_URI")
+
     if env =='production':
         from src.config.config import ProductionConfig
         app.config.from_object(ProductionConfig)
