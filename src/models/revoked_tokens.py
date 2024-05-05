@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String
-from src import db
+from src.extensions import db
 
 class RevokedToken(db.Model):
     __tablename__ = 'revoked_tokens'

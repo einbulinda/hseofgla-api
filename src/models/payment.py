@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, Numeric, String, TIMESTAMP,ForeignKey
 from sqlalchemy.orm import relationship
-from src import db
+from src.extensions import db
 
 class Payment(db.Model):
     __tablename__ = "payments"

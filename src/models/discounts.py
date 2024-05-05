@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Numeric, TIMESTAMP
 from sqlalchemy.orm import relationship
-from src import db
+from src.extensions import db
 
 
 class Discount(db.Model):

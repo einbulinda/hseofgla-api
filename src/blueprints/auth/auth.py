@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, jwt_required
-from src import db, limiter
+from src.extensions import db, limiter
 import time
-import datetime
+from datetime import datetime
 from src.models.staff import Staff
 from src.models.customers import Customer
 from src.models.login_details import LoginDetails

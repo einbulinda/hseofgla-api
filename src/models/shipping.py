@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import relationship
-from src import db
+from src.extensions import db
 
 class ShippingAddresses(db.Model):
     __tablename__ = "shipping_addresses"
