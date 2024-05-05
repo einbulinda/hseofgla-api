@@ -246,6 +246,8 @@ CREATE TABLE aud.login_details (
 	customer_id INT,
 	username VARCHAR(255),
 	password VARCHAR (255),
+    failed_attempts INT NOT NULL DEFAULT 0,
+    is_locked BOOLEAN DEFAULT False,
 	created_by INT,
     created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_by INT,
@@ -422,3 +424,20 @@ CREATE TRIGGER orders_audit_trigger
 AFTER INSERT OR UPDATE OR DELETE ON dev.orders
 FOR EACH ROW EXECUTE FUNCTION dev.audit_orders_changes();
 
+-- Trigger for locking user on multiple attempts
+CREATE OR REPLACE FUNCTION update_lock_status()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF NEW.failed_attempts >= 5 THEN
+        NEW.is_locked := TRUE;
+    ELSIF NEW.failed_attempts = 0 THEN
+        NEW.is_locked := FALSE;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER check_lock_status
+BEFORE UPDATE OF failed_attempts ON aud.login_details
+FOR EACH ROW
+EXECUTE FUNCTION update_lock_status();
