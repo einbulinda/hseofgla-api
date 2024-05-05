@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token
-from src import db
+from src import db, limiter
+import time
 from src.models.staff import Staff
 from src.models.customers import Customer
 from src.models.login_details import LoginDetails
@@ -49,14 +50,16 @@ def register():
         return jsonify({"error":"Registration failed","details":str(e)}),500
 
 @auth.route('/login', methods=['POST'])
+@limiter.limit("5 per minute") # 5 attempts in a minute.
 def login():
     """Provides logic for Customer login"""   
     # Identify source system
     source = request.headers.get('Source-System','customer')  # Default to 'customer' if not provided
-
     data = request.get_json()
     username = data['username']
     password = data['password']
+
+    time.sleep(1) # Time delay to discourage brute force.
 
     # Determine query based on the source system
     if source.lower() == 'back-office':
@@ -64,15 +67,24 @@ def login():
     else:
         user = LoginDetails.query.filter(LoginDetails.username == username, LoginDetails.customer_id.isnot(None)).first()
     
+    if user and (user.failed_attempts >= 5 or user.is_locked):
+        return jsonify({"error":"Account is locked due to too many failed attempts or administrative reasons."}),403
+
     if user and check_password_hash(user.password, password):
+        # Reset the failed attempt count on success.
+        user.failed_attempts = 0
+        db.session.commit()
+
         # Create access token using the identity of the user
         access_token = create_access_token(identity={"user_id":user.staff_id if user.staff_id else user.customer_id})
-       
+        
         return jsonify({
             "message":"Login successful",
             "username": user.username,
             "access_token" : access_token
         }), 200
     else:
+        user.failed_attempts = user.failed_attempts + 1
+        db.session.commit()
         return jsonify({"message":"Invalid username or password."}), 401
             
