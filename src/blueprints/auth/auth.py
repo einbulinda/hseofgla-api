@@ -15,32 +15,33 @@ def register():
     data = request.get_json()
     
     try:
-        username = data.get('username')
-        name = data.get('name')
-        email = data.get('email')
-        mobile = data.get('mobile')
-        password = data.get('password')
+        username = data['username']
+        name = data['name']
+        email = data['email']
+        mobile = data['mobile']
+        password = data['password']
         role = data.get('role','customer').lower() # Default role
         current_user = data.get('current_user',1001)
-    
-        # Hash the password
         password_hash = generate_password_hash(password)
-        
-        if role in ['staff','admin']:
-            # Create a new staff member and login details
-            user = Staff(name=name,email=email,mobile_number=mobile,role=role,created_by=current_user)
+    
+        with db.session.begin():  # For handling transaction commit and rollback       
+            if role in ['staff','admin']:
+                # Create a new staff member and login details
+                user = Staff(name=name,email=email,mobile_number=mobile,role=role,created_by=current_user)
+            else:
+                # Create new customer and login details
+                user = Customer(name=name,email=email,mobile_number=mobile,created_by=current_user)
+            
             db.session.add(user)
             db.session.flush() # Flush to get the staff id before committing
-            login_detail = LoginDetails(staff_id=user.staff_id, username=username,password=password_hash,created_by=current_user,updated_by=current_user)
-        else:
-            # Create new customer and login details
-            user = Customer(name=name,email=email,mobile_number=mobile,created_by=current_user)
-            db.session.add(user)
-            db.session.flush()
-            login_detail = LoginDetails(customer_id=user.customer_id,username=username, password=password_hash, created_by=current_user, updated_by=current_user)
-        
-        db.session.add(login_detail)
-        db.session.commit()
+
+            login_detail = LoginDetails(
+                staff_id=user.staff_id if isinstance(user,Staff) else None,
+                customer_id=user.customer_id if isinstance(user, Customer) else None,
+                username=username, password=password_hash, created_by=current_user, updated_by=current_user)
+            
+            db.session.add(login_detail)
+
         current_app.logger.info(f"User registered successfully: {username}")    
         return jsonify({"message":"User registered successfully"}),201
     except Exception as e:
@@ -49,48 +50,29 @@ def register():
 
 @auth.route('/login', methods=['POST'])
 def login():
-    """Provides logic for Customer login"""
+    """Provides logic for Customer login"""   
+    # Identify source system
+    source = request.headers.get('Source-System','customer')  # Default to 'customer' if not provided
+
     data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+    username = data['username']
+    password = data['password']
+
+    # Determine query based on the source system
+    if source.lower() == 'back-office':
+        user = LoginDetails.query.filter(LoginDetails.username == username, LoginDetails.staff_id.isnot(None)).first()
+    else:
+        user = LoginDetails.query.filter(LoginDetails.username == username, LoginDetails.customer_id.isnot(None)).first()
     
-    # Query login_details to get user by the username provided
-    customer = LoginDetails.query.filter(username == username, LoginDetails.customer_id != None).first()
-    
-    if customer and check_password_hash(customer.password, password):
-        # Other details can be shared if and when necessary on validating the token
-        profile_data = {
-            "username": customer.username,
-            "access_token" : create_access_token(identity={'user_id': customer.customer_id})
-        }        
+    if user and check_password_hash(user.password, password):
+        # Create access token using the identity of the user
+        access_token = create_access_token(identity={"user_id":user.staff_id if user.staff_id else user.customer_id})
+       
         return jsonify({
             "message":"Login successful",
-            "profile": profile_data
+            "username": user.username,
+            "access_token" : access_token
         }), 200
     else:
         return jsonify({"message":"Invalid username or password."}), 401
             
-
-@auth.route('/signin', methods=['POST'])
-def signin():
-    """Provides logic for staff signin"""
-    data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
-
-    staff = LoginDetails.query.filter(username == username, LoginDetails.staff_id != None).first()
-
-    if staff and check_password_hash(staff.password, password):
-        profile_data ={
-            "username": staff.username,
-            "access_token" : create_access_token(identity={'user_id': staff.staff_id})
-        }
-        return jsonify({
-            "message":"Login successful",
-            "profile": profile_data
-        }), 200
-    else:
-        return jsonify({"message":"Invalid username or password."}), 401
-        
-       
-    
