@@ -19,7 +19,7 @@ db =  SQLAlchemy()
 migrate = Migrate()
 cors = CORS()
 jwt = JWTManager()
-limiter = Limiter(key_func=get_remote_address)
+limiter = Limiter(key_func=get_remote_address, default_limits=["5 per minute", "100 per day"])
 
 # Initialize logging based on the environment
 def setup_logging(app):
