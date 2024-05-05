@@ -3,29 +3,11 @@ import os
 from dotenv import load_dotenv
 import logging
 from logging.handlers import RotatingFileHandler
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_cors import CORS
-from flask_jwt_extended import JWTManager
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-from src.models.revoked_tokens import RevokedToken
+from src.extensions import init_app
+
 
 # Load environment variables
 load_dotenv()
-
-
-# Initialize Flask Extensions
-db =  SQLAlchemy()
-migrate = Migrate()
-cors = CORS()
-jwt = JWTManager()
-limiter = Limiter(key_func=get_remote_address, default_limits=["5 per minute", "100 per day"])
-
-@jwt.token_in_blocklist_loader
-def check_if_token_in_blacklist(jwt_header, jwt_payload):
-    jti = jwt_payload['jti']
-    return RevokedToken.is_jti_blacklisted(jti)
 
 # Initialize logging based on the environment
 def setup_logging(app):
@@ -76,12 +58,9 @@ def create_app():
     # Set up logging
     setup_logging(app)
     
-    # Initialize extensions with the app
-    db.init_app(app)
-    migrate.init_app(app, db)
-    cors.init_app(app)
-    jwt.init_app(app)
-    limiter.init_app(app)
+    # Initialize extensions
+    init_app(app)
+    
     
     # Register Blueprints
     from src.blueprints.auth.auth import auth as auth_blueprint
