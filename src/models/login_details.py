@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from src import db
 
@@ -11,6 +11,8 @@ class LoginDetails(db.Model):
     customer_id = Column(Integer, ForeignKey('dev.customers.customer_id'))
     username = Column(String(255), unique=True)
     password = Column(String(255))
+    failed_attempts = Column(Integer)
+    is_locked = Column(Boolean, default=False)
     created_by = Column(Integer, ForeignKey('dev.staff.staff_id'))
     created_date = Column(TIMESTAMP, nullable=False, server_default=db.func.current_timestamp())
     updated_by = Column(Integer, ForeignKey('dev.staff.staff_id'))
