@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import relationship
-from src.extensions import db
+from src.services.extensions import db
 
 class Inventory(db.Model):
     __tablename__ = 'inventory'

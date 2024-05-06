@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, jwt_required
-from src.extensions import db, limiter
+from src.services.extensions import db, limiter
 import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -83,7 +83,8 @@ def login():
         db.session.commit()
 
         # Create access token using the identity of the user
-        access_token = create_access_token(identity={"user_id":user.staff_id if user.staff_id else user.customer_id})
+        user_id = user.staff_id if user.staff_id else user.customer_id
+        access_token = create_access_token(identity={"user_id":user_id})
         record_login_session(user.staff_id, request)
         
         return jsonify({

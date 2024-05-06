@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Numeric, TIMESTAMP, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
-from src.extensions import db
+from src.services.extensions import db
 
 
 class Customer(db.Model):

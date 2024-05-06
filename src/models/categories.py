@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import relationship, backref
-from src.extensions import db
+from src.services.extensions import db
 
 class Categories(db.Model):
     __tablename__ = 'categories'

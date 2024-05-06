@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import relationship
-from src.extensions import db
+from src.services.extensions import db
 
 class ProductImages(db.Model):
     __tablename__ = "product_images"

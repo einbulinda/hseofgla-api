@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer,Numeric, String, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import relationship
-from src.extensions import db
+from src.services.extensions import db
 
 class Order(db.Model):
     __tablename__ = "orders"

@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, TIMESTAMP, String, Text, ForeignKey
 from sqlalchemy.orm import relationship
-from src.extensions import db
+from src.services.extensions import db
 
 class StaffLoginSessions(db.Model):
     __tablename__ = "staff_login_sessions"

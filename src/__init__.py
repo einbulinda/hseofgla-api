@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 import logging
 from logging.handlers import RotatingFileHandler
-from src.extensions import init_app
+from src.services.extensions import init_app
 
 
 # Load environment variables
@@ -63,7 +63,10 @@ def create_app():
     
     
     # Register Blueprints
-    from src.blueprints.auth.auth import auth as auth_blueprint
+    from src.blueprints.auth import auth as auth_blueprint
+    from src.blueprints.products import products as products_blueprint
+
     app.register_blueprint(auth_blueprint)
+    app.register_blueprint(products_blueprint)
     
     return app

@@ -25,3 +25,5 @@ def init_app(app):
         from src.models.revoked_tokens import RevokedToken
         jti = jwt_payload['jti']
         return RevokedToken.is_jti_blacklisted(jti)
+    
+    
