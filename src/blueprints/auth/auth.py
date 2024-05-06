@@ -4,6 +4,7 @@ from flask_jwt_extended import create_access_token, get_jwt, get_jwt_identity, j
 from src.extensions import db, limiter
 import time
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from src.models.staff import Staff
 from src.models.customers import Customer
 from src.models.login_details import LoginDetails
@@ -129,7 +130,7 @@ def update_logout_session(user_id):
     ).order_by(StaffLoginSessions.login_timestamp.desc()).first()
 
     if session:
-        session.logout_timestamp = datetime.utcnow()
+        session.logout_timestamp = datetime.now(ZoneInfo("UTC"))
         db.session.commit()
         return True
     return False
