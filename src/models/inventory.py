@@ -8,6 +8,7 @@ class Inventory(db.Model):
 
     inventory_id = Column(Integer, primary_key=True, autoincrement=True)
     variant_id = Column(Integer, ForeignKey('dev.product_variants.variant_id'), nullable=False)
+    quantity = Column(Integer, nullable=False, default=0)
     warehouse_stock = Column(Integer, nullable=False)
     shop_stock = Column(Integer, nullable=False)
     reorder_level = Column(Integer, nullable=False)

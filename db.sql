@@ -71,9 +71,10 @@ CREATE TABLE dev.product_variants (
 CREATE TABLE dev.inventory (
     inventory_id SERIAL PRIMARY KEY,
     variant_id INT NOT NULL,
-    warehouse_stock INT NOT NULL,
-    shop_stock INT NOT NULL,
-    reorder_level INT NOT NULL,
+    quantity INT NOT NULL DEFAULT 0,
+    warehouse_stock INT NOT NULL DEFAULT 0,
+    shop_stock INT NOT NULL DEFAULT 0,
+    reorder_level INT NOT NULL DEFAULT 0,
 	created_by INT,
 	created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_by INT,
@@ -81,6 +82,21 @@ CREATE TABLE dev.inventory (
     FOREIGN KEY (variant_id) REFERENCES dev.product_variants(variant_id),
 	FOREIGN KEY (created_by) REFERENCES dev.staff(staff_id),
     FOREIGN KEY (updated_by) REFERENCES dev.staff(staff_id)
+);
+
+-- Creating Product Attributes Table
+CREATE TABLE dev.product_attributes (
+    attribute_id SERIAL PRIMARY KEY,
+    variant_id INT,
+    name VARCHAR(50),
+    value VARCHAR(50),
+    created_by INT,
+	created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	updated_by INT,
+	updated_date TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES dev.staff(staff_id),
+    FOREIGN KEY (updated_by) REFERENCES dev.staff(staff_id),
+    FOREIGN KEY (variant_id) REFERENCES dev.product_variants(variant_id)
 );
 
 -- Creating the Customers table
