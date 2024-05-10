@@ -17,6 +17,6 @@ class Inventory(db.Model):
     updated_by = Column(Integer, ForeignKey('dev.staff.staff_id'))
     updated_date = Column(TIMESTAMP)
 
-    variant = relationship("ProductVariants")
+    variant = relationship("ProductVariant")
     created_by_rel = relationship("Staff", foreign_keys=[created_by])
     updated_by_rel = relationship("Staff", foreign_keys=[updated_by])

@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, TIMESTAMP, String, Text, ForeignKey
 from sqlalchemy.orm import relationship
 from src.services.extensions import db
 
-class StaffLoginSessions(db.Model):
+class StaffLoginSession(db.Model):
     __tablename__ = "staff_login_sessions"
     __table_args__ = {"schema": "aud"}
 

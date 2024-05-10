@@ -5,11 +5,7 @@ from src.services.extensions import db, limiter
 import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from src.models.staff import Staff
-from src.models.customers import Customer
-from src.models.login_details import LoginDetails
-from src.models.staff_login_sessions import StaffLoginSessions
-from src.models.revoked_tokens import RevokedToken
+from src.models import Staff, Customer, LoginDetail, StaffLoginSession, RevokedToken
 
 
 # Create blueprint for authentication
@@ -41,7 +37,7 @@ def register():
             db.session.add(user)
             db.session.flush() # Flush to get the staff id before committing
 
-            login_detail = LoginDetails(
+            login_detail = LoginDetail(
                 staff_id=user.staff_id if isinstance(user,Staff) else None,
                 customer_id=user.customer_id if isinstance(user, Customer) else None,
                 username=username, password=password_hash, created_by=current_user, updated_by=current_user)
@@ -70,9 +66,9 @@ def login():
     # Determine query based on the source system
     user = None
     if source.lower() == 'back-office':
-        user = LoginDetails.query.filter(LoginDetails.username == username, LoginDetails.staff_id.isnot(None)).first()
+        user = LoginDetail.query.filter(LoginDetail.username == username, LoginDetail.staff_id.isnot(None)).first()
     else:
-        user = LoginDetails.query.filter(LoginDetails.username == username, LoginDetails.customer_id.isnot(None)).first()
+        user = LoginDetail.query.filter(LoginDetail.username == username, LoginDetail.customer_id.isnot(None)).first()
     
     if user and (user.failed_attempts >= 5 or user.is_locked):
         return jsonify({"error":"Account is locked due to too many failed attempts or administrative reasons."}),403
@@ -99,7 +95,7 @@ def login():
 
 def record_login_session(user_id, request):
     """Record a new login session for a staff member."""    
-    new_session = StaffLoginSessions(
+    new_session = StaffLoginSession(
         staff_id = user_id,
         ip_address = request.remote_addr,
         device_info = str(request.user_agent)
@@ -125,10 +121,10 @@ def logout():
 def update_logout_session(user_id):
     """Update user session on logout"""
     # Find the latest session for the user that hasn't been closed yet
-    session = StaffLoginSessions.query.filter_by(
+    session = StaffLoginSession.query.filter_by(
         staff_id = user_id,
         logout_timestamp=None
-    ).order_by(StaffLoginSessions.login_timestamp.desc()).first()
+    ).order_by(StaffLoginSession.login_timestamp.desc()).first()
 
     if session:
         session.logout_timestamp = datetime.now(ZoneInfo("UTC"))

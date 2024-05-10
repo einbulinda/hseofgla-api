@@ -1,5 +1,5 @@
 from flask_jwt_extended import get_jwt_identity
-from src.models.login_details import LoginDetails
+from src.models.login_detail import LoginDetails
 from src.models.staff import Staff
 
 

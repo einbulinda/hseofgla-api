@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import relationship
 from src.services.extensions import db
 
-class ProductImages(db.Model):
+class ProductImage(db.Model):
     __tablename__ = "product_images"
     __table_args__ = {"schema": "dev"}
 
@@ -15,6 +15,6 @@ class ProductImages(db.Model):
     updated_by = Column(Integer, ForeignKey('dev.staff.staff_id'))
     updated_date = Column(TIMESTAMP)
 
-    variant = relationship('ProductVariants', foreign_keys=variant_id)
+    variant = relationship('ProductVariant', foreign_keys=variant_id)
     created_by_rel = relationship("Staff", foreign_keys=[created_by])
     updated_by_rel = relationship("Staff", foreign_keys=[updated_by])

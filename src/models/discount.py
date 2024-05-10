@@ -22,6 +22,6 @@ class Discount(db.Model):
     updated_date = Column(TIMESTAMP)
 	
     product = relationship('Product', foreign_keys=product_id)
-    product_variant = relationship('ProductVariants', foreign_keys=variant_id)
+    product_variant = relationship('ProductVariant', foreign_keys=variant_id)
     created_by_rel = relationship("Staff", foreign_keys=[created_by])
     updated_by_rel = relationship("Staff", foreign_keys=[updated_by])

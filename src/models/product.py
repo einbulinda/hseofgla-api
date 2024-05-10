@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from src.services.extensions import db
 
 
-class Products(db.Model):
+class Product(db.Model):
     __tablename__ = 'products'
     __table_args__ = {'schema': 'dev'}
 
@@ -15,6 +15,7 @@ class Products(db.Model):
     updated_by = Column(Integer, ForeignKey('dev.staff.staff_id'))
     updated_date = Column(TIMESTAMP)
 
-    category = relationship("Categories")
+    category = relationship("Category")
+    variants = relationship('ProductVariant', backref='product',lazy='dynamic', cascade="all, delete-orphan")
     created_by_rel = relationship("Staff", foreign_keys=[created_by])
     updated_by_rel = relationship("Staff", foreign_keys=[updated_by])

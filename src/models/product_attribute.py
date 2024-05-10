@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey, TIMESTAMP
 from sqlalchemy.orm import relationship
 from src.services.extensions import db
 
-class ProductAttribute (db.Model):
+class ProductAttribute(db.Model):
     __tablename__ = 'product_attributes'
     __table_args__ = {"schema":"dev"}
 
@@ -15,7 +15,7 @@ class ProductAttribute (db.Model):
     updated_by = Column(Integer, ForeignKey('dev.staff.staff_id'))
     updated_date = Column(TIMESTAMP)
 
-    variant = relationship("ProductVariants", foreign_keys=variant_id)
+    variant = relationship("ProductVariant", foreign_keys=variant_id)
     created_by_rel = relationship("Staff", foreign_keys=[created_by])
     updated_by_rel = relationship("Staff", foreign_keys=[updated_by])
     

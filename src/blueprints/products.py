@@ -2,19 +2,16 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from werkzeug.security import secure_filename
 import os
+from sqlalchemy.orm import joinedload
 from src.services.extensions import db
 from src.utils import is_admin
-from src.models.products import Products
-from src.models.product_variants import ProductVariants
-from src.models.product_attributes import ProductAttribute
-from src.models.inventory import Inventory
-from src.models.product_images import ProductImages
+from src.models import Product, ProductVariant, ProductAttribute, Inventory, ProductImage
 
 
 
 products = Blueprint('products',__name__, url_prefix='/api/v1/products')
 
-@products.route('/', methods=['POST'])
+@products.route('/',methods=["POST"])
 @jwt_required()
 def add_product():
     if not is_admin():
@@ -28,13 +25,13 @@ def add_product():
     
 
     # Creating Product instance
-    new_product = Products(product_name=header['product_name'],category_id=header['category_id'], created_by=user_id)
+    new_product = Product(product_name=header['product_name'],category_id=header['category_id'], created_by=user_id)
     db.session.add(new_product)
     db.session.flush() # To get the product_id
 
     # Create new Product Variant
     for variant in variants:
-          new_variant = ProductVariants(
+          new_variant = ProductVariant(
                product_id=new_product.id,
                sku=variants["sku"],
                price=variants["price"]
@@ -61,7 +58,7 @@ def add_product():
             image_path = os.path.join('/path/to/upload/directory', image_filename)
             image_data['image'].save(image_path)  # Consider upload to a bucket and get URL back
 
-            new_image = ProductImages(
+            new_image = ProductImage(
                 variant_id=new_variant.id, 
                 image_name=image_data['name'],
                 image_url=image_path  # Path to external hosted URL
@@ -72,3 +69,47 @@ def add_product():
     return jsonify({"message":"Product added successfully"}),201
 
 
+@products.route('/', methods=["GET"])
+@jwt_required()
+def get_products():
+    """Returns all products with their details"""
+    # Fetch all product details in one query to avoid N+1 problem
+    products = Product.query.options(
+        joinedload(Product.variants)
+        .joinedload(ProductVariant.attributes),
+        joinedload(Product.variants)
+        .joinedload(ProductVariant.images)
+    ).all()
+
+    # Convert data to JSON format
+    products_list = []
+    for product in products:
+        product_data = {
+            "product_id":product.product_id,
+            "product_name": product.product_name,
+            "variants":[{
+                "variant_id": variant.variant_id,
+                "sku": variant.sku,
+                "price":float(variant.price),
+                "attributes":[
+                    {"name":attribute.name, "value":attribute.value} 
+                    for attribute in variant.attributes
+                ],
+            "images":[
+                {"image_name":image.image_name,"image_url":image.image_url}
+                for image in variant.images
+
+            ]
+
+            } for variant in product.variants
+            ]
+        }
+        products_list.append(product_data)
+    return jsonify(products_list)
+        
+
+
+@products.route('/:product_id', methods=["GET"])
+@jwt_required()
+def get_product(product_id):
+    pass

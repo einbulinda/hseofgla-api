@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import relationship, backref
 from src.services.extensions import db
 
-class Categories(db.Model):
+class Category(db.Model):
     __tablename__ = 'categories'
     __table_args__ = {"schema":"dev"}
 
@@ -14,7 +14,7 @@ class Categories(db.Model):
     updated_by = Column(Integer, ForeignKey('dev.staff.staff_id'), nullable=True)
     updated_date = Column(TIMESTAMP, nullable=True)
 
-    subcategories = relationship("Categories", backref=backref('parent_category', remote_side=[category_id]),
+    subcategories = relationship("Category", backref=backref('parent_category', remote_side=[category_id]),
                                  cascade="all, delete-orphan")
     creator = relationship("Staff", foreign_keys=[created_by], backref="category_creations")
     updater = relationship("Staff", foreign_keys=[updated_by], backref="category_updates")

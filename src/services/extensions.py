@@ -22,7 +22,7 @@ def init_app(app):
 
     @jwt.token_in_blocklist_loader
     def check_if_token_in_blacklist(jwt_header, jwt_payload):
-        from src.models.revoked_tokens import RevokedToken
+        from src.models.revoked_token import RevokedToken
         jti = jwt_payload['jti']
         return RevokedToken.is_jti_blacklisted(jti)
     

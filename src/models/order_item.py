@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, Numeric, ForeignKey, TIMESTAMP
 from sqlalchemy.orm import relationship
 from src.services.extensions import db
 
-class OrderItems(db.Model):
+class OrderItem(db.Model):
     __tablename__ = "order_items"
     __table_args__ = {"schema":"dev"}
 

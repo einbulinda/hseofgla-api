@@ -2,7 +2,7 @@ from sqlalchemy import Column, Integer, String, Boolean, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import relationship
 from src.services.extensions import db
 
-class ShippingAddresses(db.Model):
+class ShippingAddress(db.Model):
     __tablename__ = "shipping_addresses"
     __table_args__ = {"schema": "dev"}
 
@@ -18,6 +18,6 @@ class ShippingAddresses(db.Model):
     updated_by = Column(Integer, ForeignKey('dev.staff.staff_id'))
     updated_date = Column(TIMESTAMP)
 
-    customer = relationship('Customers', foreign_keys=customer_id)
+    customer = relationship('Customer', foreign_keys=customer_id)
     created_by_rel = relationship("Staff", foreign_keys=[created_by])
     updated_by_rel = relationship("Staff", foreign_keys=[updated_by])
