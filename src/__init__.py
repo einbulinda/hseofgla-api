@@ -12,32 +12,35 @@ load_dotenv()
 # Initialize logging based on the environment
 def setup_logging(app):
     """Setup app logging"""
-    log_level = logging.INFO
-    if app.config['ENV'] == 'production':
-        log_level = logging.WARNING
+    log_level = logging.INFO if app.config['ENV'] != 'production' else logging.WARNING
     
     # Create the logs directory if it does not exist    
-    logs_dir = os.path.join(os.path.dirname(__file__), 'logs')
-    if not os.path.exists(logs_dir):
-        os.makedirs(logs_dir) 
+    logs_dir = os.path.join(os.path.dirname(__file__),app.config.get('LOG_DIR','logs'))
+    os.makedirs(logs_dir, exist_ok=True) 
     
     # Define the path for the log file
-    log_file_path = os.path.join(logs_dir, 'application.log')
+    log_file_path = os.path.join(logs_dir, app.config.get('LOG_FILE', 'application.log'))
     
     # Create a file handler for outputting logs
-    file_handler = RotatingFileHandler(log_file_path, maxBytes=10240, backupCount=10)
+    file_handler = RotatingFileHandler(
+        log_file_path, 
+        maxBytes=app.config.get('LOG_MAX_BYTES',10*1024),
+        backupCount=app.config.get('LOG_BACKUP_COUNT',10)
+    )
+    
     file_handler.setFormatter(logging.Formatter(
             '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
         ))
-    app.logger.setLevel(log_level)
-    
-    # Set up a stream handler with a higher log level
-    stream_handler = logging.StreamHandler()
-    stream_handler.setLevel(logging.INFO)
     
     app.logger.addHandler(file_handler)
-    app.logger.addHandler(stream_handler)
     app.logger.setLevel(log_level)
+    
+    if app.config['ENV'] != 'production':
+        # Set up a stream handler with a higher log level
+        stream_handler = logging.StreamHandler()
+        stream_handler.setLevel(logging.INFO)
+        app.logger.addHandler(stream_handler)
+    
 
 
 def create_app():
