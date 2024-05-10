@@ -43,6 +43,7 @@ CREATE TABLE dev.products (
     product_id SERIAL PRIMARY KEY,
     product_name VARCHAR(255) NOT NULL,
     category_id INT,
+    is_active BOOLEAN NOT NULL DEFAULT (True)
 	created_by INT,
 	created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_by INT,

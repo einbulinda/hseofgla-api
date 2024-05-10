@@ -16,3 +16,27 @@ def is_admin():
                 if staff_member and staff_member.role == 'admin':
                         return True
                 return False
+
+def format_product_data(product):
+    """Convert Product Data to JSON Format"""
+    product_data = {
+        "product_id":product.product_id,
+        "product_name": product.product_name,
+        "variants":[{
+            "variant_id": variant.variant_id,
+            "sku": variant.sku,
+            "price":float(variant.price),
+            "attributes":[
+                {"name":attribute.name, "value":attribute.value} 
+                for attribute in variant.attributes
+            ],
+        "images":[
+            {"image_name":image.image_name,"image_url":image.image_url}
+            for image in variant.images
+
+        ]
+
+        } for variant in product.variants
+        ]
+    }
+    return product_data

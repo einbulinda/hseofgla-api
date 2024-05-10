@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey
+from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from src.services.extensions import db
 
@@ -10,6 +10,7 @@ class Product(db.Model):
     product_id = Column(Integer, primary_key=True, autoincrement=True)
     product_name = Column(String(255), nullable=False)
     category_id = Column(Integer, ForeignKey('dev.categories.category_id'))
+    is_active = Column(Boolean, default=True, nullable=False)
     created_by = Column(Integer, ForeignKey('dev.staff.staff_id'))
     created_date = Column(TIMESTAMP, nullable=False)
     updated_by = Column(Integer, ForeignKey('dev.staff.staff_id'))
