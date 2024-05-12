@@ -15,8 +15,9 @@ class ProductVariant(db.Model):
     updated_by = Column(Integer, ForeignKey('dev.staff.staff_id'))
     updated_date = Column(TIMESTAMP)
 
-    product = relationship("Product")
+    # product = relationship("Product")
     attributes = relationship('ProductAttribute', backref='variant', cascade='all, delete-orphan')
     images = relationship('ProductImage', backref='variant',cascade='all, delete-orphan')
+    
     created_by_rel = relationship("Staff", foreign_keys=[created_by])
     updated_by_rel = relationship("Staff", foreign_keys=[updated_by])

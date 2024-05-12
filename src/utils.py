@@ -1,6 +1,5 @@
 from flask_jwt_extended import get_jwt_identity
-from src.models.login_detail import LoginDetails
-from src.models.staff import Staff
+from src.models import LoginDetail, Staff
 
 
 def is_admin():
@@ -9,7 +8,7 @@ def is_admin():
         user_id = get_jwt_identity()["user_id"]
         
         # Check if user corresponds to a staff member
-        login_details = LoginDetails.query.filter_by(staff_id=user_id).first()
+        login_details = LoginDetail.query.filter_by(staff_id=user_id).first()
 
         if login_details:
                 staff_member = Staff.query.filter_by(staff_id=login_details.staff_id).first()
@@ -40,3 +39,14 @@ def format_product_data(product):
         ]
     }
     return product_data
+
+def format_category(data):
+       """Formats category data to JSON"""
+       category_data = {
+              "category_id": data.category_id,
+              "category_name": data.category_name,
+              "parent_category_id": data.parent_category_id,
+              "is_active": data.is_active
+       }
+       return category_data
+       

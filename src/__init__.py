@@ -67,10 +67,11 @@ def create_app():
     
     # Register Blueprints
     from src.blueprints.auth import auth as auth_blueprint
-    from src.routes.product_routes import products as products_blueprint
+    from src.routes import products as products_blueprint, categories as categories_blueprint
     
 
     app.register_blueprint(auth_blueprint)
     app.register_blueprint(products_blueprint)
+    app.register_blueprint(categories_blueprint)
     
     return app

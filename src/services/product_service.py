@@ -1,6 +1,6 @@
 from flask import jsonify, current_app
 from sqlalchemy.exc import SQLAlchemyError
-from werkzeug.security import secure_filename
+from werkzeug.utils import secure_filename
 from sqlalchemy.orm import joinedload
 import os
 from .extensions import db

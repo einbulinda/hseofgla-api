@@ -18,5 +18,6 @@ class Product(db.Model):
 
     category = relationship("Category")
     variants = relationship('ProductVariant', backref='product',lazy='dynamic', cascade="all, delete-orphan")
+    
     created_by_rel = relationship("Staff", foreign_keys=[created_by])
     updated_by_rel = relationship("Staff", foreign_keys=[updated_by])
