@@ -1,7 +1,7 @@
 from flask import current_app, jsonify
 from .extensions import db
 from src.models import Category
-from src.utils import format_category, is_admin
+from src.utils import format_category, is_admin, handle_db_operation
 from sqlalchemy.exc import SQLAlchemyError
 
 class CategoryService:
@@ -9,37 +9,29 @@ class CategoryService:
     def add_category(data, user):
         """Add a new category to the application"""
         current_app.logger.info(f"User ID {user} is commencing addition of a new category")
-        try:
-            if not is_admin():
-                current_app.logger.warning("Unauthorized attempt to access product addition.")
-                return {"error":"Unauthorized access."},403
-    
+        
+        authorized, response, status = is_admin()
+        if not authorized:
+            return jsonify(response), status
+        
+        def add():    
             new_category = Category(
                 category_name = data["category_name"], 
                 parent_category_id = data["parent_category_id"], 
                 created_by = user
             )
-
             db.session.add(new_category)
-            db.session.commit()
-            return {"message":"Category added successfully."},201
-        except SQLAlchemyError as e:
-            db.session.rollback()
-            current_app.logger.error(f"Failed to add category:{str(e)}")
-            return {"error":"Database error", "message":str(e)},500
-        except Exception as e:
-            db.session.rollback()
-            current_app.logger.error(f"Error adding new category: {e}")
-            return {"error":"Database error","message":str(e)},500
+
+        return handle_db_operation(add,"Category added successfully")
     
     @staticmethod
     def fetch_categories():
         """Returns list of all categories"""
         current_app.logger.info("Fetching all categories")
         try:
-            if not is_admin():
-                current_app.logger.warning("Unauthorized attempt to access product addition.")
-                return {"error":"Unauthorized access."},403    
+            authorized, response, status = is_admin()
+            if not authorized:
+                return jsonify(response), status    
 
             categories = Category.query.filter_by(is_active=True).all()
             category_list = [format_category(category) for category in categories]
@@ -80,9 +72,9 @@ class CategoryService:
         try:
             current_app.logger.info(f"User {user} is updating category details for ID {id}")
 
-            if not is_admin():
-                current_app.logger.warning("Unauthorized attempt to access product addition.")
-                return {"error":"Unauthorized access."},403 
+            authorized, response, status = is_admin()
+            if not authorized:
+                return jsonify(response), status
 
             # Fetch the category being updated
             category = Category.query.filter_by(category_id=id).first()
