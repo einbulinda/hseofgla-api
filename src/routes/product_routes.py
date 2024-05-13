@@ -32,10 +32,11 @@ def get_product(product_id):
 @products.route('/<int:product_id>', methods=["PATCH"])
 @jwt_required()
 def update_product(product_id):
+    user = get_jwt_identity()
     if not is_admin():
         current_app.logger.warning("Unauthorized attempt to access product addition.")
         return jsonify({"error":"Unauthorized access."}),403
     
-    response,status = update_product_dtls(product_id,request.json)
+    response,status = update_product_dtls(product_id,request.json, user["user_id"])
     return jsonify(response),status
 

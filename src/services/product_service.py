@@ -138,7 +138,7 @@ def fetch_product(product_id):
         current_app.logger.error(f"Error fetching product with ID {product_id}: {e}.")
         return jsonify({"error":"Internal Server Error","message":str(e)}),500
 
-def update_product_dtls(product_id,product_data):
+def update_product_dtls(product_id,product_data, user):
     """Updates part of the details for a product."""
     current_app.logger.info(f"Attempting to update product with ID {product_id}")
 
@@ -153,6 +153,7 @@ def update_product_dtls(product_id,product_data):
         product.product_name = product_data.get("product_name",product.product_name)
         product.category_id = product_data.get("category_id",product.category_id)
         product.is_active = product_data.get("is_active", product.is_active)
+        product.updated_by = user
 
         # Update Variants
         if 'variants' in product_data:
@@ -175,7 +176,7 @@ def update_product_dtls(product_id,product_data):
                     if image:
                         image.image_name = img_data.get("image_name",image.image_name)
                         image.value = img_data.get("value",image.value)
-        
+        db.session.add(product)
         db.session.commit()
         current_app.logger.info(f"Product with ID {product_id} updated successfully")
         return jsonify({"message": "Product updated successfully"}),200
