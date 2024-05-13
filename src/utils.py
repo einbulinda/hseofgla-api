@@ -1,5 +1,8 @@
 from flask_jwt_extended import get_jwt_identity
 from src.models import LoginDetail, Staff
+from flask import current_app
+from services.extensions import db
+from sqlalchemy.exc import SQLAlchemyError
 
 
 def is_admin():
@@ -13,8 +16,9 @@ def is_admin():
         if login_details:
                 staff_member = Staff.query.filter_by(staff_id=login_details.staff_id).first()
                 if staff_member and staff_member.role == 'admin':
-                        return True
-                return False
+                        return True, None, None
+                current_app.logger.warning("Unauthorized access to a restricted resource.")
+                return False, {"error":"Unauthorized Access"}, 403
 
 def format_product_data(product):
     """Convert Product Data to JSON Format"""
@@ -50,3 +54,16 @@ def format_category(data):
        }
        return category_data
        
+def handle_db_operation(callable_func, success_msg):
+       try:
+              result = callable_func()
+              db.session.commit()
+              return {"message": success_msg}, 201
+       except SQLAlchemyError as e:
+            db.session.rollback()
+            current_app.logger.error(f"Failed to add category:{str(e)}")
+            return {"error":"Database error", "message":str(e)},500
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f"Error adding new category: {e}")
+            return {"error":"Database error","message":str(e)},500
