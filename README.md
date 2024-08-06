@@ -21,26 +21,29 @@ This project is an e-commerce API built using Python and Flask. It provides func
     source venv/bin/activate # On Windows, use `venv\Scripts\activate`
 
 3. Install dependencies
+    ```bash
     pip install -r requirements.txt
 
 4. Set up the environment variables (in a `.env` file):
+    ```bash
     FLASK_APP=run.py
     FLASK_ENV=development
     DATABASE_URL=your_database_url
     SECRET_KEY=your_secret_key
 
 5. Run the application:
+    ```bash
     flask run
 
 ## Usage
 ### Endpoints:
-    * __GET__ /products: Retrieve all products
-    * __POST__ /products: Add a new product
-    * __GET__ /products/{id}: Retrieve a single product
-    * __PUT__ /products/{id}: Update a product
-    * __DELETE__ /products/{id}: Delete a product
-    * __POST__ /users/signup: Sign up a new user
-    * __POST__ /users/login: Log in an existing user
+    * **GET** /products: Retrieve all products
+    * **POST** /products: Add a new product
+    * **GET** /products/{id}: Retrieve a single product
+    * **PUT** /products/{id}: Update a product
+    * **DELETE** /products/{id}: Delete a product
+    * **POST** /users/signup: Sign up a new user
+    * **POST** /users/login: Log in an existing user
 
 
 ## Technologies Used
