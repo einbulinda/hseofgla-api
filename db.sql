@@ -1,10 +1,12 @@
 CREATE SCHEMA IF NOT EXISTS dev;
 CREATE SCHEMA IF NOT EXISTS aud;
 
+--sequence for user IDs
+CREATE SEQUENCE staff_staff_id_seq START WITH 1001;
 
 -- Creating the Staff table
 CREATE TABLE dev.staff (
-    staff_id SERIAL PRIMARY KEY,
+    staff_id INT PRIMARY KEY DEFAULT nextval('staff_staff_id_seq'),
     name VARCHAR(255) NOT NULL,
     role VARCHAR(255) NOT NULL,
     mobile_number VARCHAR(15),
@@ -14,9 +16,9 @@ CREATE TABLE dev.staff (
 	updated_by INT,
 	updated_date TIMESTAMP,
 	FOREIGN KEY (created_by) REFERENCES dev.staff(staff_id),
-    FOREIGN KEY (updated_by) REFERENCES dev.staff(staff_id),
-    ADD SEQUENCE staff_staff_id_seq RESTART WITH 1001
+    FOREIGN KEY (updated_by) REFERENCES dev.staff(staff_id)
 );
+
 
 -- Staff ID to start from 1001
 -- ALTER SEQUENCE dev.staff_staff_id_seq RESTART WITH 1001;
@@ -43,7 +45,7 @@ CREATE TABLE dev.products (
     product_id SERIAL PRIMARY KEY,
     product_name VARCHAR(255) NOT NULL,
     category_id INT,
-    is_active BOOLEAN NOT NULL DEFAULT (True)
+    is_active BOOLEAN NOT NULL DEFAULT (True),
 	created_by INT,
 	created_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	updated_by INT,

@@ -37,13 +37,13 @@ This project is an e-commerce API built using Python and Flask. It provides func
 
 ## Usage
 ### Endpoints:
-    * **GET** /products: Retrieve all products
-    * **POST** /products: Add a new product
-    * **GET** /products/{id}: Retrieve a single product
-    * **PUT** /products/{id}: Update a product
-    * **DELETE** /products/{id}: Delete a product
-    * **POST** /users/signup: Sign up a new user
-    * **POST** /users/login: Log in an existing user
+    * GET /products: Retrieve all products
+    * POST /products: Add a new product
+    * GET /products/{id}: Retrieve a single product
+    * PUT /products/{id}: Update a product
+    * DELETE /products/{id}: Delete a product
+    * POST /users/signup: Sign up a new user
+    * POST /users/login: Log in an existing user
 
 
 ## Technologies Used
